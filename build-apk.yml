@@ -1,0 +1,57 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código do repositório
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Preparar Java (necessário para o Android)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Instalar dependências do projeto
+        run: npm install
+
+      - name: Adicionar a plataforma Android ao projeto
+        run: npx cap add android
+
+      - name: Copiar o ícone da barra de status das notificações
+        run: |
+          mkdir -p android/app/src/main/res/drawable
+          cp android-res/ic_stat_icon.png android/app/src/main/res/drawable/ic_stat_icon.png
+
+      - name: Gerar os ícones do app a partir do ícone-fonte
+        run: npx @capacitor/assets generate --android --iconBackgroundColor "#3B82F6" --iconBackgroundColorDark "#3B82F6"
+
+      - name: Sincronizar os arquivos web com o projeto Android
+        run: npx cap sync android
+
+      - name: Compilar o APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Publicar o APK como Release do repositório
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: "Lembraz build #${{ github.run_number }}"
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

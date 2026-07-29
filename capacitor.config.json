@@ -1,0 +1,15 @@
+{
+  "appId": "com.lembraz.app",
+  "appName": "Lembraz",
+  "webDir": "www",
+  "backgroundColor": "#08111F",
+  "android": {
+    "backgroundColor": "#08111F"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#3B82F6"
+    }
+  }
+}
